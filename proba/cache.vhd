@@ -28,11 +28,22 @@ end cache;
 --uvesti stanja!!!
 
 architecture cache_behav of cache is 
+	component reg
+		generic (Tpd : Time := unit_delay;
+					cache_size_block : natural := 2**12);
+		port ( -- da li treba clk?
+			cl : in bit;
+			inc : in bit;
+			outData : out std_logic_vector(cache_size_block-1 downto 0)
+		);
+	end component;
+	
+	type blockType is array (0 to block_size-1) of std_logic_vector(word_size-1 downto 0);
 	
 	type cache_entry is record	
 		VBit, DBit : std_logic;
 		tag : std_logic_vector(tag_length-1 downto 0);
-		data : array (0 to block_size-1) of std_logic_vector(word_size-1 downto 0);
+		data : blockType;
 	end record;
 	
 	type cache_array is array (0 to cache_size_blocks -1) of cache_entry;
@@ -48,30 +59,27 @@ architecture cache_behav of cache is
 	--videti da li moze shared variable
 	signal cache_mem : cache_array;
 	signal state : cache_state;
-	signal cntValue : std_logic_vector(cache_size_blocks-1)
-	component reg
-		generic (Tpd : Time := unit_delay
-					cache_size_block : natural := 2**12);
-		port ( -- da li treba clk?
-			cl : in bit;
-			inc : in bit;
-			outData : out std_logic_vector(cache_size_block-1 downto 0)
-		);
-	end component;
+	signal cntValue : std_logic_vector(cache_size_blocks-1);
+	
 	
 
 begin	
 
 	cnt : reg port map ( -- da li treba clk?
-			cl => clCnt;
-			inc => incCnt;
-			outData : cntValue
+			cl => clCnt,
+			inc => incCnt,
+			outData => cntValue
 		);
+
+	
+				
+	process(clk)
+	begin	
 	entryNum := to_unsigned(conv_integer(cntValue));
 	
 	i := 0;
 	notFound := true;
-	while (i<cache_size_blocks and notFound)
+	while (i<cache_size_blocks and notFound) loop
 		if (cache_mem(i).tag = tag) then
 			if (cache_mem(i).VBit = '1') then
 				hit <= '1';
@@ -80,10 +88,7 @@ begin
 		else
 			i := i+1;
 		end if;
-	end while;
-				
-	process(clk)
-	begin	
+	end loop;
 		if (rising_edge(clk)) then
 			--dodati reset
 			case state is

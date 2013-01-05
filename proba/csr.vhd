@@ -1,4 +1,4 @@
-library iee;
+library ieee;
 use ieee.std_logic_1164.all;
 
 entity CSR is
@@ -9,10 +9,13 @@ csr_in: in std_logic);
 end CSR;
 
 
-architecture csr_arch of csr is
+architecture csr_arch of CSR is
 begin
 --mozda staviti clk
-if (csr_in) then
-	data_out <= data_in;
-end if;
-end csr_arch
+process
+begin
+	if (csr_in = '1') then
+		data_out <= data_in;
+	end if;
+end process;
+end csr_arch;

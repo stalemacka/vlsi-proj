@@ -2,8 +2,9 @@ library ieee;
 use work.all;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
+use work.userConstants.all;
 
-
+--uvesti u odnosu na mod dodatne registre
 entity regFile is
 generic ( 
 				 num_reg_bits : integer := 5;
@@ -13,6 +14,7 @@ generic (
 				 
 	port ( -- MYB H i L
 				clk : in std_logic;
+				mode : in std_logic_vector(4 downto 0);
 				reset : in std_logic;
 				read_addr1 : in std_logic_vector(num_reg_bits - 1 downto 0);
 				read_addr2 : in std_logic_vector(num_reg_bits - 1 downto 0);
@@ -23,7 +25,7 @@ generic (
 				outShiftVal : out std_logic_vector(7 downto 0);
 				inVal : in std_logic_vector(reg_size - 1 downto 0);
 				wEn : std_logic;
-				r1En, r2En, rshiftEn : std_logic
+				r1En, r2En, rshiftEn : in std_logic
 			);	
 end regFile;
 
@@ -31,6 +33,7 @@ end regFile;
 architecture regFile_behav of regFile is
 	subtype reg is std_logic_vector(reg_size - 1 downto 0);
 	type reg_array is array(0 to 2**num_reg_bits - 1) of reg;
+	
 	signal registers : reg_array;
 	
 begin
@@ -38,7 +41,7 @@ begin
 write: process(clk)			
 	begin
 		if rising_edge(clk) then
-			if (wEn = '1')
+			if (wEn = '1') then
 				registers(conv_integer(write_addr)) <= inVal;	
 			end if;	
 	end if;	
@@ -69,6 +72,6 @@ readShift: process(clk, rshiftEn) --mozda dodati adresu
 				outShiftVal <= registers(conv_integer(read_4shift))(7 downto 0);
 			end if;
 		end if;
-	end process read1;
+	end process readShift;
 -- mozda staviti citanje van procesa
-end regFile_behav
+end regFile_behav;

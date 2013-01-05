@@ -30,6 +30,8 @@ port (clk: std_logic;
 		
 end IDphase;
 
+architecture idPhase_behav of IDphase is
+
 component regFile
 generic ( 
 				 num_reg_bits : integer := 5;
@@ -70,7 +72,7 @@ component mux2 is
 	);
 end component;
 
-architecture idPhase_behav of IDphase is
+
 signal condVal: std_logic;
 signal operand1Addr, operand2Addr, shiftAddr : std_logic_vector(num_reg_bits -1 downto 0);
 signal shift_intern: std_logic_vector(4 downto 0);
@@ -78,13 +80,18 @@ signal regShift: std_logic_vector(7 downto 0);
 signal read1, read2, readShift : std_logic;
 signal regOp2: std_logic_vector(reg_size-1 downto 0);
 signal op2Sel: std_logic;
-signal imm_intern
+--signal imm_intern
 
 begin
 
 condition: condCalc port map (condField => cond, flags => csr_flags,
 		condVal => condVal);
-		
+registers: regFile port map (
+		clk => clk,	reset => reset, read_addr1 =>operand1Addr, read_addr2 =>operand2Addr, read_4shift=> shiftAddr,
+		write_addr => , outVal1 => operand1, outVal2 => operand2, outShiftVal => regShift,
+		inVal => , wEn => , r1En => read1, r2En => read2, rshiftEn=> readShift
+); --zanemarice se operand2 gde nije potreban
+
 process (clk)
 begin	--postaviti sve na nule
 	if (rising_edge(clk)) then
@@ -102,7 +109,7 @@ begin	--postaviti sve na nule
 							read1 <= '1';
 							read2 <= '1';
 							if (someBit = '1') then 
-								if (checkBit /= '0') --prekid
+								if (checkBit /= '0') then --prekid
 								else 
 									readShift <= '1';
 									shiftAddr <= rsRot;
@@ -120,7 +127,7 @@ begin	--postaviti sve na nule
 						 read1 <= '1';
 						 read2 <= '1';
 						 if (someBit = '1') then 
-							if (checkBit /= '0') --prekid
+							if (checkBit /= '0') then --prekid
 							else 
 								readShift <= '1';
 								shiftAddr <= rsRot;
@@ -169,11 +176,8 @@ begin	--postaviti sve na nule
 						
 			end case;
 	end if;
-registers: regFile port map (
-		clk => clk,	reset => reset, read_addr1 =>operand1Addr, read_addr2 =>operand2Addr, read_4shift=> shiftAddr,
-		write_addr => , outVal1 => operand1, outVal2 => operand2, outShiftVal => regShift,
-		inVal => , wEn => , r1En => read1, r2En => read2, rshiftEn=> readShift
-); --zanemarice se operand2 gde nije potreban
+end if;
+
 
 --muxOp1: mux2 port map (value0 => regOp1, value1 => , value => operand1, value_selector => op1Sel);
 --muxOp2: mux2 port map (value0 => regOp2, value1 => imm, value => operand2, value_selector => op2Sel);  

@@ -1,4 +1,4 @@
- library ieee;
+library ieee;
 use work.all;
 use ieee.std_logic_1164.all;
 
@@ -11,11 +11,13 @@ end adder;
 
 
 architecture addBehav of adder is
-begin
 variable tmp : integer;
+
+begin
+process
 begin
 	tmp := conv_integer(indata);
 	tmp := tmp + word_size_B;
-	result <= std_logic_vector(to_unsigned(indata, word_size_B*8)));
-
+	result <= std_logic_vector(to_unsigned(indata, word_size_B*8));
+end process;
 end addBehav;
