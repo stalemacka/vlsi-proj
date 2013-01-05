@@ -10,7 +10,7 @@ entity ir is
 	port (
 		clk : in std_logic;
 		irIn : in bit;
-		instruction : in std_logic_vector(downto 0);		
+		instruction : in std_logic_vector(word_size-1 downto 0);		
 		cond : out std_logic_vector(3 downto 0); -- staviti genericki
 		typeI : out std_logic_vector(3 downto 0);
 		opcode : out std_logic_vector(3 downto 0); -- staviti genericki
@@ -31,7 +31,7 @@ begin
 instDec: process (clk)
 	begin
 	if rising_edge(clk) then
-			if (irIn = '1')
+			if (irIn = '1') then
 				cond <= instruction(31 downto 28);
 				typeI <= instruction(27 downto 25);
 				opcode <= instruction(24 downto 21);

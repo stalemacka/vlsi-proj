@@ -9,7 +9,7 @@ port (
 	clk : in std_logic;
 	regDestAddr : in std_logic_vector(num_reg_bits-1 downto 0);
 	loadValue : in std_logic_vector(word_size -1 downto 0); --na ovo ce se povezati dbus ka kesu
-	exeResult : in std_logic_vector(word_size -1 downto 0)'
+	exeResult : in std_logic_vector(word_size -1 downto 0);
 	opcode : in std_logic_vector(3 downto 0);
 	loadInstr : in std_logic;
 	

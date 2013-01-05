@@ -37,7 +37,7 @@ begin
 		when gt => condVal <= not flags(2) and (flags(3) = flags(0));-- and (flags(3) and flags(0)) or (not flags(3) and not flags(0));
 		when le => condVal <= flags(2) and (flags(3) /= flags(0));--and (flags(3) and not flags(0)) or (not flags(3) and flags(0));
 		when al => condVal <= '1';
-		when others ; --ili dodeliti 0 ako ne moze
+		when others => err; --ili dodeliti 0 ako ne moze
 	end case;
 end process;
 end condCalc_behav;
