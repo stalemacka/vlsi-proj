@@ -46,7 +46,7 @@ begin
 			
 			
 			case opcode is
-				when loadOpCode | andOpCode | eorOpCode | subOpCode | rsbOpCode | addOpCode | adcOpCode | sbcOpCode | rscOpCode | tstOpCode | teqOpCode | cmpOpCode | cmnOpCode | orrOpCode | movOpCode | bicOpCode | mvnOpCode =>
+				when loadOpCode | andOpCode | eorOpCode | subOpCode | rsbOpCode | addOpCode | adcOpCode | sbcOpCode | rscOpCode | tstOpCode | teqOpCode | cmpOpCode | cmnOpCode | orrOpCode | movOpCode | branchOpCode | mvnOpCode =>
 					regOut <= regIn;
 					if (opcode = loadOpCode) then
 						aBus <= ALUout;
@@ -65,7 +65,7 @@ begin
 				when haltOpCode =>
 					isHalt <= '1';
 				when others =>
-					null
+					null;
 			end case;
 		end if;
 end process;
