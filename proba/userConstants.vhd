@@ -22,6 +22,11 @@ package UserConstants is
 	constant bicOpCode	:	std_logic_vector(3 downto 0) := "1110";
 	constant mvnOpCode	:	std_logic_vector(3 downto 0) := "1111";
 
+	constant jmpOpCode	: 	std_logic_vector(3 downto 0) := "";
+	constant jsrOpCode  : 	std_logic_vector(3 downto 0) := "";
+	constant rtsOpCode	: 	std_logic_vector(3 downto 0) := "";
+	constant branchOpCode : std_logic_vector(3 downto 0) := "";
+	constant branchAndLinkOpCode : std_logic_vector(3 downto 0) := "";
 
 	-- shift
 	constant lsl	:	std_logic_vector(1 downto 0) := "00";
@@ -30,12 +35,18 @@ package UserConstants is
 	constant rorS	:	std_logic_vector(1 downto 0) := "11";
 
 
+
 	-- branch
 	
 	-- jmp
 	
-	--load/store
-	
+	--load/store/halt
+	constant loadOpCode : std_logic_vector(3 downto 0) := "";
+	constant storeOpCode: std_logic_vector(3 downto 0) := "";
+	constant pushOpCode : std_logic_vector(3 downto 0) := "";
+	constant popOpCode	: std_logic_vector(3 downto 0) := "";
+	constant nopOpCode  : std_logic_vector(3 downto 0) := "";
+	constant haltOpCode : std_logic_vector(3 downto 0) := "";
 	-- conditions
 
 	constant eq		:	std_logic_vector(3 downto 0) := "0000";
@@ -63,9 +74,10 @@ package UserConstants is
 	constant ls_i : std_logic_vector(2 downto 0) := "010";
 	constant br : std_logic_vector(2 downto 0) := "101";
 	constant swi_s : std_logic_vector(2 downto 0) := "111";
+
 	
 	--razne constant
-	constant commonRegs : integer := 9;
+	constant commonRegs : integer := 8;
 	constant exclusiveRegs : integer := 7;
 
 end UserConstants;

@@ -91,7 +91,7 @@ begin
 	if (reset='1') then
 		ALUout <= X"00_00_00_00";
 		branch <= '0';
-		PC <= X"00_00_00_00";
+		PC <= X"00_00_00_00"; 
 		rds <= "00000";
 		sp <= 0;
 		opc <= nopOpCode; --TODO NOP INSTRUCTION

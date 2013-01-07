@@ -44,7 +44,7 @@ begin
 			isLoad <= '0';
 			isOther <= '0';
 			
-			
+			 
 			case opcode is
 				when loadOpCode | andOpCode | eorOpCode | subOpCode | rsbOpCode | addOpCode | adcOpCode | sbcOpCode | rscOpCode | tstOpCode | teqOpCode | cmpOpCode | cmnOpCode | orrOpCode | movOpCode | branchOpCode | mvnOpCode =>
 					regOut <= regIn;
