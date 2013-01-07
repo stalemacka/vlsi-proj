@@ -65,7 +65,7 @@ package UserConstants is
 	constant swi_s : std_logic_vector(2 downto 0) := "111";
 	
 	--razne constant
-	constant commonRegs : integer := 8;
+	constant commonRegs : integer := 9;
 	constant exclusiveRegs : integer := 7;
 
 end UserConstants;

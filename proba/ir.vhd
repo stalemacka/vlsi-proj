@@ -6,10 +6,10 @@ use ieee.numeric_std.all;
 
 
 entity ir is
-	generic (Tpd : Time := unit_delay);
+	generic (word_size:natural := 32);
 	port (
 		clk : in std_logic;
-		irIn : in bit;
+		irIn : in std_logic;
 		instruction : in std_logic_vector(word_size-1 downto 0);		
 		cond : out std_logic_vector(3 downto 0); -- staviti genericki
 		typeI : out std_logic_vector(3 downto 0);
