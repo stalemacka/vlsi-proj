@@ -2,6 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use work.UserConstants.all;
+use work.all;
 entity EXecStage is
 	port(
 		clk		: in std_logic;
@@ -23,15 +24,15 @@ entity EXecStage is
 		
 		cBit	: in std_logic;
 		sBit	: in std_logic;
-		
+		mem_done: in std_logic;
 		
 		branchAndLink : in std_logic;
-		r14		: reg_inc_dec;
 		
 		dataOp	: in std_logic;
 		shiftOp	: in std_logic;
 		LoadStore : in std_logic;
 		
+		linkRegister: out std_logic_vector(31 downto 0);
 		aluNout		: out std_logic;
 		aluZout		: out std_logic;
 		aluVout		: out std_logic;
@@ -46,6 +47,11 @@ end EXecStage;
 
 
 architecture EXecStage of EXecStage is
+component condCalc
+port (condField : in std_logic_vector(3 downto 0);
+		flags : in std_logic_vector(3 downto 0);--, val2 : in std_logic_vector(word_size-1 downto 0);
+		condVal : out std_logic);
+end component;
 	signal ALUout	: std_logic_vector(31 downto 0);
 	signal tmpALUout: std_logic_vector(32 downto 0);
 	signal aluN		: std_logic;
@@ -55,7 +61,7 @@ architecture EXecStage of EXecStage is
 	signal PC		: std_logic_vector(31 downto 0);
 	signal branch	: std_logic;
 	signal sp		: integer :=0;
-	signal stack	: steck_mem;	
+	signal stackBus	: std_logic_vector(31 downto 0);	
 	signal opc		: std_logic_vector(3 downto 0);
 
 	signal rds		: std_logic_vector(4 downto 0);
@@ -64,11 +70,16 @@ architecture EXecStage of EXecStage is
 	signal prevRd 	: std_logic_vector(4 downto 0);
 	signal dirtyBit : std_logic;
 	signal prevALUout : std_logic_vector(31 downto 0);
-	signal r14tmp	: reg_inc_dec;
+	signal linkRegisterTmp : std_logic_vector(31 downto 0);
+	
+	signal cond		: std_logic;
+	signal csr_flags: std_logic_vector(3 downto 0);
+	signal condVal  : std_logic;
 begin
-
+condition: condCalc port map (condField => cond, flags => csr_flags,
+		condVal => condVal);
 process is
-	variable A_input, B_input, C_out: std_logic_vector(31 downto 0);
+	variable A_input, B_input, C_input: std_logic_vector(31 downto 0);
 begin
 	wait until clk = '1';
 	
@@ -82,8 +93,8 @@ begin
 		branch <= '0';
 		PC <= X"00_00_00_00";
 		rds <= "00000";
-		sp := 0;
-		opc <= ""; --TODO NOP INSTRUCTION
+		sp <= 0;
+		opc <= nopOpCode; --TODO NOP INSTRUCTION
 		prevRd <= "0000";
 		dirtyBit <= '0';
 		prevALUout <= X"00_00_00_00";
@@ -94,8 +105,8 @@ begin
 		branch <= '0';
 		PC <= X"00_00_00_00";
 		rds <= "00000";
-		sp := 0;
-		opc <= ""; --TODO NOP INSTRUCTION
+		sp <= 0;
+		opc <= nopOpCode; --TODO NOP INSTRUCTION
 		prevRd <= "0000";
 		dirtyBit <= '0';
 		prevALUout <= X"00_00_00_00";
@@ -107,11 +118,11 @@ begin
 		pc <= currentPc;
 		rds <= VC;
 		
-		A_input <= A; -- TODO ako je load, ako je aluopp, ako je iz prethodne
+		A_input := A; -- TODO ako je load, ako je aluopp, ako je iz prethodne
 		
-		B_input <= B; -- TODO ako je load, ako je aluopp, ako je iz prethodne
+		B_input := B; -- TODO ako je load, ako je aluopp, ako je iz prethodne
 	
-		C_input <= C;
+		C_input := C;
 		
 		
 		case opc is
@@ -289,52 +300,10 @@ begin
 				dirtyBit <= '1';
 				prevRd <= VC;
 				prevALUout <= not A_input;
-			when jmpOpCode =>
-				if (branchAndLink = '1') then
-					r14tmp <= currentPc;
-				end if;
-				PC <= A_input + imm;
-				ALUout <= X"00000000";
-				
-				branch <= '1';
-				rdsValue <= X"00_00_00_00";
-				
-				dirtyBit <= '0';
-				prevRd <= "00000";
-				prevALUout <= X"00_00_00_00";
-			when jsrOpCode =>
-				if (branchAndLink = '1') then
-					r14tmp <= currentPc;
-				end if;
-				stack(sp) <= currentPc;
-				sp <= sp + 1;
-				PC <= A_input + imm;
-				branch <= '1';
-				ALUout <= X"00_00_00_00";
-				rdsValue <= X"00_00_00_00";
-				
-				dirtyBit <= '0';
-				prevRd <= "00000";
-				prevALUout <= X"00_00_00_00";
-				
-			when rtsOpCode =>
-				if (branchAndLink = '1') then
-					r14tmp <= currentPc;
-				end if;
-				sp <= sp - 1;
-				PC <= stack(sp);
-				branch <= '1';
-				rdsValue <= X"00_00_00_00";
-				
-				dirtyBit <= '0';
-				prevRd <= "00000";
-				prevALUout <= X"00_00_00_00";
-			when beqOpCode =>
-				if(A_input = B_input) then
+
+			when branchOpCode =>
+				if(condVal = '1') then
 					ALUout <= X"00_00_00_00";
-					if (branchAndLink = '1') then
-						r14tmp <= currentPc;
-					end if;
 					PC <= currentPc + imm;
 					branch <= '1';
 					rdsValue <= X"00_00_00_00";
@@ -344,27 +313,12 @@ begin
 				dirtyBit <= '0';
 				prevRd <= "00000";
 				prevALUout <= X"00_00_00_00";
-			when bnqOpCode =>
-				if(A_input = B_input) then 
-					branch <= '0';
-				else
-					if (branchAndLink = '1') then
-						r14tmp <= currentPc;
-					end if;
-					PC <= currentPc + imm;
-					rdsValue <= X"00_00_00_00";
-					branch <= '1';
-				end if;
-				
-				dirtyBit <= '0';
-				prevRd <= "00000";
-				prevALUout <= X"00_00_00_00";
-			when bltOpCode =>
-				if(A_input < B_input) then
+			when branchAndLinkOpCode =>
+				if(condVal = '1') then
 					ALUout <= X"00_00_00_00";
-					if (branchAndLink = '1') then
-						r14tmp <= currentPc;
-					end if;
+					linkRegisterTmp <= currentPc;
+					stackBus <= currentPc;
+					wait until mem_done = '1';
 					PC <= currentPc + imm;
 					branch <= '1';
 					rdsValue <= X"00_00_00_00";
@@ -373,52 +327,7 @@ begin
 				
 				dirtyBit <= '0';
 				prevRd <= "00000";
-				prevALUout <= X"00_00_00_00";
-			when bgtOpCode =>
-				if(A_input > B_input) then
-					ALUout <= X"00_00_00_00";
-					if (branchAndLink = '1')
-						r14tmp <= currentPc;
-					end if;
-					PC <= currentPc + imm;
-					branch <= '1';
-					rdsValue <= X"00_00_00_00";
-				else branch <= '0';
-				end if;
-				
-				dirtyBit <= '0';
-				prevRd <= "00000";
-				prevALUout <= X"00_00_00_00";
-			when bleOpCode =>
-				if(A_input <= B_input) then
-					ALUout <= X"00_00_00_00";
-					if (branchAndLink = '1')
-						r14tmp <= currentPc;
-					end if;
-					PC <= currentPc + imm;
-					branch <= '1';
-					rdsValue <= X"00_00_00_00";
-				else branch <= '0';
-				end if;
-				
-				dirtyBit <= '0';
-				prevRd <= "00000";
-				prevALUout <= X"00_00_00_00";
-			when bgeOpCode =>
-				if(A_input >= B_input) then
-					ALUout <= X"00_00_00_00";
-					if (branchAndLink = '1')
-						r14tmp <= currentPc;
-					end if;
-					PC <= currentPc + imm;
-					branch <= '1';
-					rdsValue <= X"00_00_00_00";
-				else branch <= '0';
-				end if;
-				
-				dirtyBit <= '0';
-				prevRd <= "00000";
-				prevALUout <= X"00_00_00_00";
+				prevALUout <= X"00_00_00_00";				
 			when haltOpCode =>
 				branch <= '0';
 				rdsValue <= X"00_00_00_00";	
@@ -426,28 +335,6 @@ begin
 				dirtyBit <= '0';
 				prevRd <= "00000";
 				prevALUout <= X"00_00_00_00";
-			when pushOpCode =>
-				stack(sp) <= A_input;
-				sp <= sp + 1;
-				-- TODO greska za overflow
-				branch <= '0';
-				ALUout <= X"00_00_00_00";
-				rdsValue <= X"00_00_00_00";
-				
-				dirtyBit <= '0';
-				prevRd <= "00000";
-				prevALUout <= X"00_00_00_00";
-			when popOpCode =>
-				sp <= sp - 1;
-				-- TODO ako je sp = 0
-				
-				ALUout <= stack(sp);
-				rdsValue <= X"00_00_00_00";
-				branch <= '0';
-				
-				dirtyBit <= '1';
-				prevRd <= VC;
-				prevALUout <=  stack(sp);
 			when nopOpCode =>
 				dirtyBit <= '0';
 				prevRd <= "00000";
@@ -470,7 +357,7 @@ result <= ALUout;
 isBranch <= branch;
 newPc <= PC;
 newOpcode <= opc;
-r14 <= r14tmp;
+linkRegister <= linkRegisterTmp;
 
 aluNout <= aluN;
 aluZout <= aluZ;
