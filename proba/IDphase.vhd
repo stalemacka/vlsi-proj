@@ -1,11 +1,15 @@
 library ieee;
-use work.all;
 use ieee.std_logic_1164.all;
+use ieee.std_logic_unsigned.all;
 use work.UserConstants.all;
 
 
 entity IDphase is
+generic (num_reg_bits : natural :=5;
+			word_size : natural :=32;
+			reg_size : natural :=32);
 port (clk: std_logic;
+		reset: std_logic;
 		csr_flags: in std_logic_vector(3 downto 0);
 		
 		cond : in std_logic_vector(3 downto 0); -- staviti genericki
@@ -18,6 +22,9 @@ port (clk: std_logic;
 		shift : in std_logic_vector(1 downto 0);
 		offIntNum : in std_logic_vector(23 downto 0);	
 		loadImm : in std_logic_vector(11 downto 0);
+		writeRegAddr: in std_logic_vector(num_reg_bits-1 downto 0);
+		writeRegData: in std_logic_vector(word_size-1 downto 0);
+		wrReg: in std_logic;
 		
 		aluOp : out std_logic_vector(3 downto 0);
 		operand1 : out std_logic_vector(word_size-1 downto 0);
@@ -35,8 +42,8 @@ architecture idPhase_behav of IDphase is
 component regFile
 generic ( 
 				 num_reg_bits : integer := 5;
-				 reg_size : integer := 32;
-				 Tpd : Time := unit_delay
+				 reg_size : integer := 32
+				-- Tpd : Time := unit_delay
 			);
 				 
 	port (	clk : in std_logic;
@@ -88,8 +95,8 @@ condition: condCalc port map (condField => cond, flags => csr_flags,
 		condVal => condVal);
 registers: regFile port map (
 		clk => clk,	reset => reset, read_addr1 =>operand1Addr, read_addr2 =>operand2Addr, read_4shift=> shiftAddr,
-		write_addr => , outVal1 => operand1, outVal2 => operand2, outShiftVal => regShift,
-		inVal => , wEn => , r1En => read1, r2En => read2, rshiftEn=> readShift
+		write_addr => writeRegAddr, outVal1 => operand1, outVal2 => operand2, outShiftVal => regShift,
+		inVal => writeRegData, wEn => wrReg, r1En => read1, r2En => read2, rshiftEn=> readShift
 ); --zanemarice se operand2 gde nije potreban
 
 process (clk)
@@ -170,7 +177,7 @@ begin	--postaviti sve na nule
 					operand1Addr <= rnMask;
 					--op2Sel <= '1';
 				
-				when br =>
+				when br => null;
 						
 						
 						

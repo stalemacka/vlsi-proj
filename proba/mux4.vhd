@@ -16,7 +16,7 @@ entity mux4 is
 end mux4;
 
 
-architecture mux4_arch of mux is
+architecture mux4_arch of mux4 is
 begin		
 	with value_selector select
 		value <= value0 after Tpd when "00",

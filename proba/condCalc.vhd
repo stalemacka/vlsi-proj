@@ -1,7 +1,7 @@
 library ieee;
-use work.all;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
+use work.userConstants.all;
 
 
 
@@ -32,12 +32,12 @@ begin
 		when vc => condVal <= not flags(0);
 		when hi => condVal <= flags(1) and not flags(2);
 		when ls => condVal <= not flags(1) or flags(2);
-		when ge => condVal <= (flags(3) = flags(0));--(flags(3) and flags(0)) or (not flags(3) and not flags(0));
-		when lt => condVal <= (flags(3) /= flags(0)); --(flags(3) and not flags(0)) or (not flags(3) and flags(0));
-		when gt => condVal <= not flags(2) and (flags(3) = flags(0));-- and (flags(3) and flags(0)) or (not flags(3) and not flags(0));
-		when le => condVal <= flags(2) and (flags(3) /= flags(0));--and (flags(3) and not flags(0)) or (not flags(3) and flags(0));
+		when ge => condVal <= not (flags(3) xor flags(0));--(flags(3) and flags(0)) or (not flags(3) and not flags(0));
+		when lt => condVal <= flags(3) xor flags(0); --(flags(3) and not flags(0)) or (not flags(3) and flags(0));
+		when gt => condVal <= not flags(2) and not (flags(3) xor flags(0));-- and (flags(3) and flags(0)) or (not flags(3) and not flags(0));
+		when le => condVal <= flags(2) and (flags(3) xor flags(0));--and (flags(3) and not flags(0)) or (not flags(3) and flags(0));
 		when al => condVal <= '1';
-		when others => err; --ili dodeliti 0 ako ne moze
+		when others => condVal <='0'; --videti da li ovde gresku neku ili tako nesto
 	end case;
 end process;
 end condCalc_behav;

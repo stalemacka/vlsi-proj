@@ -12,7 +12,7 @@ entity mux2 is
 	port (
 		value1, value0 : in std_logic_vector(word_size-1 downto 0);
 		value : out std_logic_vector(word_size-1 downto 0);
-		value_selector : in bit
+		value_selector : in std_logic
 	);
 end mux2;
 

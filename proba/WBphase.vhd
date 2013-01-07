@@ -1,10 +1,11 @@
 library ieee;
-use work.all;
 use ieee.std_logic_1164.all;
 use work.UserConstants.all;
 
 
 entity WBphase is
+generic (num_reg_bits : natural :=5;
+			word_size: natural :=32);
 port (
 	clk : in std_logic;
 	regDestAddr : in std_logic_vector(num_reg_bits-1 downto 0);
