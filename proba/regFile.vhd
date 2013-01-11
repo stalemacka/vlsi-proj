@@ -25,7 +25,7 @@ generic (
 				
 				outVal1 : out std_logic_vector(reg_size - 1 downto 0);				
 				outVal2 : out std_logic_vector(reg_size - 1 downto 0);	
-				outShiftVal : out std_logic_vector(7 downto 0);
+				outShiftVal : out std_logic_vector(4 downto 0);
 				inVal : in std_logic_vector(reg_size - 1 downto 0);
 				wEn : std_logic;
 				r1En, r2En, rshiftEn : in std_logic
@@ -90,14 +90,25 @@ read2: process(clk, r2En) --mozda dodati adresu
 	end process read2;
 
 readShift: process(clk, rshiftEn) --mozda dodati adresu
+	variable regVal: natural;
 	begin	
-		if rising_edge(clk) then
+		if rising_edge(clk) then --ovo vrv izbaciti
 			if (rshiftEn = '1') then
 				numRegS := conv_integer(read_4shift);
 				if (numRegS < 8) then
-					outShiftVal <= registersShared(numRegS)(7 downto 0);
+					regVal := conv_integer(registersShared(numRegS)(4 downto 0));
+					if (regVal < 32) then 
+						outShiftVal <= registersShared(numRegS)(4 downto 0); --u specifikaciji stoji
+					else
+						outShiftVal <= (others => '0');
+					end if;
 				elsif (numRegS < 15) then
-					outShiftVal <= registersExcl(conv_integer(mode), numRegS-commonRegs)(7 downto 0);
+					regVal := conv_integer(registersExcl(conv_integer(mode), numRegS-commonRegs)(4 downto 0));
+					if (regVal < 32) then 
+						outShiftVal <= registersExcl(conv_integer(mode), numRegS-commonRegs)(4 downto 0);
+					else
+						outShiftVal <= (others => '0');
+					end if;
 				end if;
 			end if;
 		end if;

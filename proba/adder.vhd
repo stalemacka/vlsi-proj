@@ -6,7 +6,8 @@ use ieee.numeric_std.all;
 entity adder is
 generic (word_size_B : integer :=4);
 port (indata : in std_logic_vector(word_size_B*8-1 downto 0);
-		result: out std_logic_vector(word_size_B*8-1 downto 0));
+		result: out std_logic_vector(word_size_B*8-1 downto 0);
+		enable: in std_logic)
 end adder;
 
 

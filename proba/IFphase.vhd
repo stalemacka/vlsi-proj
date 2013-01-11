@@ -76,21 +76,22 @@ end component mux2;
 component adder is
 generic (word_size_B : integer :=4);
 port (indata : in std_logic_vector(word_size_B*8-1 downto 0);
-		result: out std_logic_vector(word_size_B*8-1 downto 0)
+		result: out std_logic_vector(word_size_B*8-1 downto 0);
+		enable: in std_logic
 		);
 end component adder;
 
 signal currPc, nextPc, pcOutIntern: std_logic_vector(word_size-1 downto 0);
 signal pcLoad, irLoad : std_logic;
-
-
+--da li stall ili poseban pcload
+--treba gledati i upis u pc preko instrukcije!
 begin
-pcLoad <= '1'; --ili variable ovde
+--pcLoad <= '1'; --ili variable ovde
 irLoad <= '1';
-muxIF: mux2 port map(value0=>currPc, value1=>pcBranch, value=>pc_out, value_selector=>isBranch ); --u currpc je bas vrednost koja treba ako nema skoka
+muxIF: mux2 port map(value0=>nextPc, value1=>pcBranch, value=>pcOutIntern, value_selector=>isBranch ); --u currpc je bas vrednost koja treba ako nema skoka
 --currPc ako je stall, pc_out ako nema skoka i nije stall, pcBranch ako ima skoka
-newPc: adder port map(indata=>pcOutIntern, result=>nextPc); --nextPc
-pcReg: pc port map(clk=>clk, ld=>pcLoad, indata=>nextPc, outdata=>currPc, cl=>'0'); --videti da li moze ovako
+newPc: adder port map(indata=>currPc, result=>nextPc, enable => '1'); --nextPc
+pcReg: pc port map(clk=>clk, ld=>pcLoad, indata=>pcOutIntern, outdata=>currPc, cl=>'0'); --videti da li moze ovako
 irReg:ir port map (clk => clk, irIn => irLoad, instruction => busFromCache, cond => cond, typeI => typeI,	opcode => opcode,
 		pBit => pBit, uBit => uBit, bBit => bBit, wBit => wBit, lsBit => lsBit, someBit => someBit, checkBit => checkBit,
 		rnMask => rnMask, rd => rd, rsRot => rsRot, rm => rm,	imm => imm,
@@ -99,20 +100,27 @@ irReg:ir port map (clk => clk, irIn => irLoad, instruction => busFromCache, cond
 process (clk)
 begin
 --muxIF: mux2 port map(value0=>currPc, value1=>currPc, value2=>pc_out, value3=>pcBranch, value=>pcToRead, value_selector=> );
+	if (rising_edge(clk)) then
+		if (stall = '0') then
+			rdMem<='1';
+			busToCache <= currPc;
+			pcLoad <= '1';
+			wait until mem_done = '1';
+			pcLoad <= '0'; --videti da li ovako
+		else 
+			nextPc <= currPc;
+		end if;
+		pc_out <= nextPc;
 
-if (rising_edge(clk)) then
-	if (stall = '0') then
-		rdMem<='1';
-		busToCache <= pcOutIntern;
-		wait until mem_done = '1';
-	else 
-		nextPc <= currPc;
+	--u mux-u ce se izabrati pc
 	end if;
+end process;
 
+process (mem_done)
+begin
+	if (mem_done='1') then	
+		rdMem <= '0';
+	end if;
+end process;
 
---u mux-u ce se izabrati pc
-
-end if;
-end process; -- ne znam da li u proces stavljati
-pc_out <= pcOutIntern;
 end ifPhase_behav;

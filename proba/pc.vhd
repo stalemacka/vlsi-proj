@@ -16,15 +16,16 @@ end pc;
 
 
 architecture pc_arch of pc is
+--variable tmpdata: integer;
+variable tmpdata: std_logic_vector(31 downto 0);
 begin
-	process(clk)
-	variable tmpdata: integer;
+	process(clk)	
 	begin
 		if rising_edge(clk) then
 			if cl = '1' then tmpdata := 0; --videti da li treba--
-			elsif ld = '1' then tmpdata := conv_integer(indata);
+			elsif ld = '1' then tmpdata := indata;--:= conv_integer(indata);
 			end if;
 		end if;
-		outdata<= std_logic_vector(to_unsigned(tmpdata, 32));-- after Tpd;
+		outdata<= tmpdata; --std_logic_vector(to_unsigned(tmpdata, 32));-- after Tpd;
 	end process;
 end pc_arch;
