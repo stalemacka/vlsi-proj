@@ -12,7 +12,8 @@ port (
 	exeLoad : in std_logic;
 	isCmp : in std_logic;
 	stallEx, stallId, stallIf : out std_logic;
-	flushEx, flushId, flushIf : out std_logic
+	flushEx, flushId, flushIf : out std_logic;
+	branchTaken : in std_logic
 );
 end ctrlUnit;
 
@@ -48,8 +49,10 @@ begin
 						stallIf <= '1';
 						flushEx <= '1'; --treba prakticno staviti noop u exe
 					end if;
-			end case;		
-		
+			end case;	
+		elsif (branchTaken = '1') then --ovo moze da se desi samo ako je branch u exe vazi, pa zato elsif
+			flushId <= '1';
+			flushIf <= '1';
 		end if;
 	end if;	
 end ctrlUnit_behav;
