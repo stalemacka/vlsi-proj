@@ -75,9 +75,15 @@ package UserConstants is
 	constant br : std_logic_vector(2 downto 0) := "101";
 	constant swi_s : std_logic_vector(2 downto 0) := "111";
 
+	--adrese prekida u IVT
+	constant innerExc : std_logic_vector(31 downto 0 ) := X"00_00_00_04";
+	constant outerExc : std_logic_vector(31 downto 0 ) := X"00_00_00_18";
+	constant swExc : std_logic_vector(31 downto 0 ) := X"00_00_00_08";
 	
 	--razne constant
 	constant commonRegs : integer := 8;
 	constant exclusiveRegs : integer := 7;
+	
+	
 
 end UserConstants;

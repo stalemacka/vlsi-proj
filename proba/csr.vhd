@@ -1,21 +1,34 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity CSR is
+entity PSR is
 port (
 data_in: in std_logic_vector(31 downto 0);
 data_out: out std_logic_vector(31 downto 0);
-csr_in: in std_logic);
-end CSR;
+psr_in: in std_logic;
+mask : in std_logic_vector(31 downto 0);
+modeType : in std_logic_vector(1 downto 0) --ako je ssr za koji je mod
+);
+end PSR;
 
 
-architecture csr_arch of CSR is
+architecture psr_arch of PSR is
 begin
 --mozda staviti clk
-process
+process(psr_in)
+variable currVal : std_logic_vector(31 downto 0);
 begin
-	if (csr_in = '1') then
-		data_out <= data_in;
+	if (psr_in = '1') then
+		if (modeType = "00") then --cpsr
+			currVal := (currVal and not mask) or (data_in and mask);
+		else 
+			if (conv_integer(currVal(4 downto 0) > 2)) then --prekid
+			else
+				currVal := (currVal and not mask) or (data_in and mask);
+			end if;
+		end if;
 	end if;
 end process;
-end csr_arch;
+
+data_out <= currVal; --!!!
+end psr_arch;

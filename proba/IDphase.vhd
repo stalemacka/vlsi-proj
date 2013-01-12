@@ -30,13 +30,14 @@ port (clk: std_logic;
 		aluOp : out std_logic_vector(3 downto 0);
 		operand1 : out std_logic_vector(word_size-1 downto 0);
 		operand2 : out std_logic_vector(word_size-1 downto 0);
-		isCmp, isLoad, isStore : out std_logic;
+		isCmp, isLoad, isStore, isBranch, link, stop : out std_logic;
 		shiftType : out std_logic_vector(1 downto 0);
 		shiftOut : out std_logic_vector(4 downto 0);
 		rotateOut : out std_logic_vector(3 downto 0);
 		
 		src1, src2, dst, shReg : out std_logic_vector(num_reg_bits-1 downto 0);
-		shouldShift: out std_logic
+		shouldShift: out std_logic;
+		stReg, cstReg : out std_logic
 		);
 		
 end IDphase;
@@ -115,6 +116,8 @@ begin	--postaviti sve na nule
 			isCmp <= '0';
 			isLoad <= '0';
 			isStore <= '0';
+			isBranch <= '0';
+			link <= '0';
 			read1<='0';
 			read2<='0';
 			readShift <= '0';
@@ -122,6 +125,9 @@ begin	--postaviti sve na nule
 			rotateOut <= "0000";
 			shouldShift <= '0';
 			opSel2 <= '0';
+			stReg <= '0';
+			cstReg <= '0';
+			stop <= '0';
 			
 			case typeI is		
 				when dpis_rs_srr_sr => 
@@ -147,7 +153,17 @@ begin	--postaviti sve na nule
 								shiftOut <= shiftA;
 							end if;
 						else 
-							--ovde treba za pristup csr-u
+							--ovde treba za pristup csr-u							
+							if (bBit = '0') then cstReg <= '1';
+							else stReg <= '1';
+							end if;
+							if (wBit = '1') then
+								read2 <= '1';
+								operand2Addr <= rm;
+								operand1Addr <= rnMask;
+							else
+								dst <= rd;								
+							end if;
 						end if;
 					else --nisu one sto se 'preklapaju', neke od dp_is si
 						 operand1Addr <= rnMask;
@@ -180,6 +196,14 @@ begin	--postaviti sve na nule
 							tmpImm (7 downto 0) <= imm;
 							tmpImm (word_size-1 downto 8) <= (others => '0'); 
 						else --pristup csru
+							if (bBit = '0') then cstReg <= '1';
+							else stReg <= '1';
+							end if;
+							operand1Addr <= rnMask;
+							rotateOut <= rsRot;
+							tmpImm(7 downto 0) <= imm;
+							tmpImm(word_size-1 downto 8) <= (others => '0');
+							op2Sel <= '1';
 						end if;
 					else
 						operand1Addr <= rnMask;
@@ -197,7 +221,7 @@ begin	--postaviti sve na nule
 						read2 <= '1';
 						operand1Addr <= rnMask;
 						operand2Addr <= rm;
-						if (lsBit='1') then isLoad <='1';
+						if (pBit='1') then isLoad <='1';
 						else isStore <='1';
 						end if;
 						--shiftAmount vec ima;
@@ -207,13 +231,24 @@ begin	--postaviti sve na nule
 					-- videti da li je oznacena vrednost
 					read1 <= '1';
 					operand1Addr <= rnMask;
-					if (lsBit='1') then isLoad <='1';
+					if (pBit='1') then isLoad <='1';
 					else isStore <='1';
 					end if;
-					--op2Sel <= '1';
+					op2Sel <= '1';
+					tmpImm(11 downto 0) <= loadImm;
+					tmpImm(31 downto 12) <= (others => '0');
 				
-				when br => null;		
-						
+				when br => 
+					isBranch <= '1';	
+					if (lsBit = '1') then 
+						link <= '1';
+					end if;
+				
+				when swi_s =>
+					if (pBit = '0') then 
+						stop <= '1';
+					else
+					end if;
 			end case;
 		src1 <= operand1Addr;
 		src2 <= operand2Addr;
