@@ -40,7 +40,8 @@ begin
 						wbWrite <= '1';
 						regAddr <= regDestAddr;
 						resultValue <= exeResult;
-						
+				
+				when others => null;	
 			end case;
 		end if;
 					

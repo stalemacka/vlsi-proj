@@ -12,9 +12,9 @@ entity ir is
 		irIn : in std_logic;
 		instruction : in std_logic_vector(word_size-1 downto 0);		
 		cond : out std_logic_vector(3 downto 0); -- staviti genericki
-		typeI : out std_logic_vector(3 downto 0);
+		typeI : out std_logic_vector(2 downto 0);
 		opcode : out std_logic_vector(3 downto 0); -- staviti genericki
-		pBit, uBit, bBit, wBit, lsBit, someBit, checkBit: out std_logic;
+		lsBit, someBit, checkBit: out std_logic;
 		rnMask, rd, rsRot, rm : out std_logic_vector(3 downto 0);
 		imm: out std_logic_vector(7 downto 0);
 		shiftA : out std_logic_vector(4 downto 0);
@@ -35,10 +35,6 @@ instDec: process (clk)
 				cond <= instruction(31 downto 28);
 				typeI <= instruction(27 downto 25);
 				opcode <= instruction(24 downto 21);
-				pBit <= instruction(24);
-				uBit <= instruction(23);
-				bBit <= instruction(22);
-				wBit <= instruction(21);
 				lsBit <= instruction(20);
 				someBit <= instruction(4);
 				checkBit <= instruction(7);

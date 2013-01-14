@@ -17,12 +17,12 @@ end pc;
 
 architecture pc_arch of pc is
 --variable tmpdata: integer;
-variable tmpdata: std_logic_vector(31 downto 0);
 begin
-	process(clk)	
+	process(ld)	
+	variable tmpdata: std_logic_vector(31 downto 0);
 	begin
-		if rising_edge(clk) then
-			if cl = '1' then tmpdata := 0; --videti da li treba--
+		if (ld = '1') then
+			if cl = '1' then tmpdata := X"00_00_00_00"; --videti da li treba--
 			elsif ld = '1' then tmpdata := indata;--:= conv_integer(indata);
 			end if;
 		end if;

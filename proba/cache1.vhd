@@ -122,9 +122,9 @@ begin
 					elsif (localHit='1') then
 						if (rd = '1') then
 							if (opByte = '1') then
-								hlp := integer((conv_integer(addrCPU) mod 16) / 4); --videti da li je ovo ceo deo ili ne								
+								hlp := integer((conv_integer(addrCPU) mod 16) / 4); --videti da li je ovo ceo deo ili ne; redni broj reci								
 								dataToCPU(31 downto 8) <= (others => '0');
-								dataToCPU(7 downto 0) <= cache_mem(i).data(hlp)((3-(hlp mod 4))*8+7 downto (3-(hlp mod 4))*8); --proveriti ovo!!!
+								dataToCPU(7 downto 0) <= cache_mem(i).data(hlp)((hlp mod 4)*8+7 downto (hlp mod 4)*8); --proveriti ovo!!!
 							else
 								dataToCPU <= cache_mem(i).data(hlp); --ovo je ceo blok, ne moze!!!
 							end if;
@@ -132,7 +132,7 @@ begin
 							cache_mem(i).DBit <= '1';
 							if (opByte = '1') then
 								hlp := integer((conv_integer(addrCPU) mod 16) / 4); --videti da li je ovo ceo deo ili ne
-								cache_mem(i).data(hlp)((3-(hlp mod 4))*8+7 downto (3-(hlp mod 4))*8) <= dataFromCpu(7 downto 0);
+								cache_mem(i).data(hlp)((hlp mod 4)*8+7 downto (hlp mod 4)*8) <= dataFromCpu(7 downto 0);
 							else
 								cache_mem(i).data(hlp) <= dataFromCpu;								
 							end if;
@@ -156,9 +156,6 @@ begin
 						state <= MISS;					
 				
 				when MISS =>
-					cache_mem(entryNum).VBit <= '1';
-					cache_mem(entryNum).DBit <= '0';
-					cache_mem(entryNum).tag <= tmpTag;
 					for j in 0 to 3 loop
 						wait until mem_done = '1';		
 						--memContinue <='0';
@@ -167,13 +164,16 @@ begin
 						memContinue <= '1';
 					end loop;
 					memContinue <= '0';
+					cache_mem(entryNum).VBit <= '1';
+					cache_mem(entryNum).DBit <= '0';
+					cache_mem(entryNum).tag <= tmpTag;
 					localHit <= '1';
 					if (rd = '1') then
 						hlp := integer((conv_integer(addrCPU) mod 16) / 4);
 						if (opByte = '1') then
 							--hlp := integer((conv_integer(addrCPU) mod 16) / 4); --videti da li je ovo ceo deo ili ne								
 							dataToCPU(31 downto 8) <= (others => '0');
-							dataToCPU(7 downto 0) <= cache_mem(entryNum).data(hlp)((3-(hlp mod 4))*8+7 downto (3-(hlp mod 4))*8);
+							dataToCPU(7 downto 0) <= cache_mem(entryNum).data(hlp)((hlp mod 4)*8+7 downto (hlp mod 4)*8);
 						else
 							dataToCPU <= cache_mem(entryNum).data(hlp); --mozda -1?
 						end if;
@@ -181,7 +181,7 @@ begin
 						cache_mem(entryNum).DBit <= '1';
 						if (opByte = '1') then
 							hlp := integer((conv_integer(addrCPU) mod 16) / 4); --videti da li je ovo ceo deo ili ne
-							cache_mem(entryNum).data(hlp)((3-(hlp mod 4))*8+7 downto (3-(hlp mod 4))*8) <= dataFromCpu(7 downto 0);
+							cache_mem(entryNum).data(hlp)((hlp mod 4)*8+7 downto (hlp mod 4)*8) <= dataFromCpu(7 downto 0);
 						else
 							cache_mem(entryNum).data(hlp) <= dataFromCpu;								
 						end if;
