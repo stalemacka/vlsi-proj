@@ -22,12 +22,6 @@ package UserConstants is
 	constant bicOpCode	:	std_logic_vector(3 downto 0) := "1110";
 	constant mvnOpCode	:	std_logic_vector(3 downto 0) := "1111";
 
-	constant jmpOpCode	: 	std_logic_vector(3 downto 0) := "";
-	constant jsrOpCode  : 	std_logic_vector(3 downto 0) := "";
-	constant rtsOpCode	: 	std_logic_vector(3 downto 0) := "";
-	constant branchOpCode : std_logic_vector(3 downto 0) := "";
-	constant branchAndLinkOpCode : std_logic_vector(3 downto 0) := "";
-
 	-- shift
 	constant lsl	:	std_logic_vector(1 downto 0) := "00";
 	constant lsr	: 	std_logic_vector(1 downto 0) := "01";
@@ -39,15 +33,6 @@ package UserConstants is
 	-- branch
 	
 	-- jmp
-	
-	--load/store/halt
-	constant loadOpCode : std_logic_vector(3 downto 0) := "";
-	constant storeOpCode: std_logic_vector(3 downto 0) := "";
-	constant pushOpCode : std_logic_vector(3 downto 0) := "";
-	constant popOpCode	: std_logic_vector(3 downto 0) := "";
-	constant nopOpCode  : std_logic_vector(3 downto 0) := "";
-	constant haltOpCode : std_logic_vector(3 downto 0) := "";
-	-- conditions
 
 	constant eq		:	std_logic_vector(3 downto 0) := "0000";
 	constant ne		:	std_logic_vector(3 downto 0) := "0001";
@@ -84,6 +69,8 @@ package UserConstants is
 	constant commonRegs : integer := 8;
 	constant exclusiveRegs : integer := 7;
 	
+	--clock period
+	constant clk_period : time := 1 ns; --!!!
 	
 
 end UserConstants;

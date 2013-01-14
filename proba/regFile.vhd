@@ -8,7 +8,7 @@ use work.userConstants.all;
 -- za pc posebno izvesti neki signal
 entity regFile is
 generic ( 
-				 num_reg_bits : integer := 5;
+				 num_reg_bits : integer := 4;
 				 reg_size : integer := 32
 				-- Tpd : Time := unit_delay
 				 );
@@ -25,7 +25,7 @@ generic (
 				
 				outVal1 : out std_logic_vector(reg_size - 1 downto 0);				
 				outVal2 : out std_logic_vector(reg_size - 1 downto 0);	
-				outShiftVal : out std_logic_vector(4 downto 0);
+				outShiftVal : out std_logic_vector(7 downto 0);
 				inVal : in std_logic_vector(reg_size - 1 downto 0);
 				wEn : std_logic;
 				r1En, r2En, rshiftEn : in std_logic
@@ -41,12 +41,11 @@ architecture regFile_behav of regFile is
 	
 	signal registersShared : reg_arrayC;
 	signal registersExcl : all_exclusive;
-	
-	variable numReg, numReg2, numRegS : integer;
-	
+
 begin
 		
-write: process(clk)			
+write: process(clk)	
+	variable numReg, numReg2, numRegS : integer;
 	begin
 		if rising_edge(clk) then
 			if (wEn = '1') then
@@ -62,6 +61,7 @@ write: process(clk)
 end process write;
 	
 read1: process(clk, r1En)
+	variable numReg, numReg2, numRegS : integer;	
 	begin	
 		if rising_edge(clk) then
 			if (r1En = '1') then
@@ -76,6 +76,7 @@ read1: process(clk, r1En)
 	end process read1;
 	
 read2: process(clk, r2En) --mozda dodati adresu
+	variable numReg, numReg2, numRegS : integer;	
 	begin	
 		if rising_edge(clk) then
 			if (r2En = '1') then
@@ -89,23 +90,24 @@ read2: process(clk, r2En) --mozda dodati adresu
 		end if;
 	end process read2;
 
-readShift: process(clk, rshiftEn) --mozda dodati adresu
+readShift: process(clk, rshiftEn) --mozda dodati adresu --!!! sta sa ovim 
 	variable regVal: natural;
+	variable numReg, numReg2, numRegS : integer;
 	begin	
 		if rising_edge(clk) then --ovo vrv izbaciti
 			if (rshiftEn = '1') then
 				numRegS := conv_integer(read_4shift);
 				if (numRegS < 8) then
-					regVal := conv_integer(registersShared(numRegS)(4 downto 0));
+					regVal := conv_integer(registersShared(numRegS)(7 downto 0));
 					if (regVal < 32) then 
-						outShiftVal <= registersShared(numRegS)(4 downto 0); --u specifikaciji stoji
+						outShiftVal <= registersShared(numRegS)(7 downto 0); --u specifikaciji stoji
 					else
 						outShiftVal <= (others => '0');
 					end if;
 				elsif (numRegS < 15) then
-					regVal := conv_integer(registersExcl(conv_integer(mode), numRegS-commonRegs)(4 downto 0));
+					regVal := conv_integer(registersExcl(conv_integer(mode), numRegS-commonRegs)(7 downto 0));
 					if (regVal < 32) then 
-						outShiftVal <= registersExcl(conv_integer(mode), numRegS-commonRegs)(4 downto 0);
+						outShiftVal <= registersExcl(conv_integer(mode), numRegS-commonRegs)(7 downto 0);
 					else
 						outShiftVal <= (others => '0');
 					end if;

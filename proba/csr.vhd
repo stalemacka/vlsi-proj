@@ -1,5 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.std_logic_unsigned.all;
+use ieee.numeric_std.all;
 
 entity PSR is
 port (
@@ -13,18 +15,20 @@ end PSR;
 
 
 architecture psr_arch of PSR is
+signal currVal : std_logic_vector(31 downto 0);
+
 begin
 --mozda staviti clk
 process(psr_in)
-variable currVal : std_logic_vector(31 downto 0);
+
 begin
 	if (psr_in = '1') then
 		if (modeType = "00") then --cpsr
-			currVal := (currVal and not mask) or (data_in and mask);
+			currVal <= (currVal and not mask) or (data_in and mask);
 		else 
-			if (conv_integer(currVal(4 downto 0) > 2)) then --prekid
+			if (conv_integer(currVal(4 downto 0)) > 2) then --prekid
 			else
-				currVal := (currVal and not mask) or (data_in and mask);
+				currVal <= (currVal and not mask) or (data_in and mask);
 			end if;
 		end if;
 	end if;

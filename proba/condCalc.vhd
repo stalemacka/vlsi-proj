@@ -15,29 +15,24 @@ end condCalc;
 
 architecture condCalc_behav of condCalc is
 --signal flags: std_logic_vector(3 downto 0); - ako bude trebalo vise stat. registara
-
-begin
-process (condField)
-begin
-	condVal <= '0';
+	--condVal <= '0';
 --	flags 
-	case condField is
-		when eq => condVal <= flags(2);	
-		when ne => condVal <= not flags(2);
-		when cs => condVal <= flags(1);
-		when cc => condVal <= not flags(1);
-		when mi => condVal <= flags(3);
-		when pl => condVal <= not flags(3);
-		when vs => condVal <= flags(0);
-		when vc => condVal <= not flags(0);
-		when hi => condVal <= flags(1) and not flags(2);
-		when ls => condVal <= not flags(1) or flags(2);
-		when ge => condVal <= not (flags(3) xor flags(0));--(flags(3) and flags(0)) or (not flags(3) and not flags(0));
-		when lt => condVal <= flags(3) xor flags(0); --(flags(3) and not flags(0)) or (not flags(3) and flags(0));
-		when gt => condVal <= not flags(2) and not (flags(3) xor flags(0));-- and (flags(3) and flags(0)) or (not flags(3) and not flags(0));
-		when le => condVal <= flags(2) and (flags(3) xor flags(0));--and (flags(3) and not flags(0)) or (not flags(3) and flags(0));
-		when al => condVal <= '1';
-		when others => condVal <='0'; --videti da li ovde gresku neku ili tako nesto
-	end case;
-end process;
+begin
+	with condField select
+		condVal <= flags(2) when eq, 
+					  not flags(2) when ne, 
+					  flags(1) when cs,
+					  not flags(1) when cc,
+					  flags(3) when mi,
+					  not flags(3) when pl,
+					  flags(0) when vs,
+					  not flags(0) when vc,
+					  flags(1) and not flags(2) when hi,
+					  not flags(1) or flags(2) when ls,
+					  not (flags(3) xor flags(0)) when ge,--(flags(3) and flags(0)) or (not flags(3) and not flags(0));
+					  flags(3) xor flags(0) when lt, --(flags(3) and not flags(0)) or (not flags(3) and flags(0));
+					  not flags(2) and not (flags(3) xor flags(0)) when gt, -- and (flags(3) and flags(0)) or (not flags(3) and not flags(0));
+					  flags(2) and (flags(3) xor flags(0)) when le, --and (flags(3) and not flags(0)) or (not flags(3) and flags(0));
+					  '1' when al,
+					  '0'	when others; --videti da li ovde gresku neku ili tako nesto
 end condCalc_behav;
